@@ -1,0 +1,43 @@
+{% extends "base.html" %} {% block content %} {% load static %}
+<link href="{% static 'css/main.css' %}" rel="stylesheet" />
+
+<h1 class="text-center">Order History</h1>
+<div class="container">
+  {% if dataset %}
+  <table class="table table-striped table-bordered table-hover">
+    <thead>
+      <tr>
+        <th>Product image</th>
+        <th>Product name</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Address</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in dataset %}
+      <tr>
+        <td>
+          <img style="width: 50px; height: 50px" src="media/{{ i.product.image }}" />
+        </td>
+        <td>{{i.product.name}}</td>
+        <td>{{ i.quantity}}</td>
+        <td>₹ {{i.price}}</td>
+        <td>{{i.status}}</td>
+        <td>{{ i.created_at }}</td>
+        <td>{{i.address.first_name}} {{i.address.last_name}}<br>
+          {{i.address.address}}<br>
+          {{i.address.city}}<br>
+          {{i.address.mobile_no}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="alert alert-info">Payment history is empty.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

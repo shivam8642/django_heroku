@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+{% load filters %}
+<div class="site-wrap">
+  <div class="bg-light py-3">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 mb-0">
+          <a href="/">Home</a> <span class="mx-2 mb-0">/</span>
+          <strong class="text-black">Cart</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="site-section">
+    <div class="container">
+      <div class="row mb-5">
+        <form class="col-md-12" method="post">
+          <div class="site-blocks-table">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th class="product-thumbnail">Image</th>
+                  <th class="product-name">Product</th>
+                  <th class="product-price">Price</th>
+                  <th class="product-quantity">Quantity</th>
+                  <th class="product-total">Total</th>
+                  <th class="product-remove">Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for a in obj %}
+                <tr>
+                  <td class="product-thumbnail">
+                    <img src="media/{{a.product.image}}" alt="Image" class="img-fluid" />
+                  </td>
+                  <td class="product-name">
+                    <h2 class="h5 text-black">{{a.product.name}}</h2>
+                  </td>
+                  <td>{{a.price}}</td>
+                  <td class="cart_quantity">
+                    <div class="cart_quantity_button">
+                      <a class="cart_quantity_up" href="" quantity="{{a.quantity}}" data-id="{{a.id}}"> + </a>
+                      <input data-id="{{a.id}}" class="cart_quantity_input" readonly="readonly" type="text"
+                        name="quantity" value="{{a.quantity}}" autocomplete="off" size="2">
+                      <a class="cart_quantity_down" href="" quantity="{{a.quantity}}" data-id="{{a.id}}"> - </a>
+                    </div>
+                  </td>
+                  <td>{% multiply a.quantity a.price %}</td>
+                  <td>
+                    <a href="#" class="btn btn-primary btn-sm delete" data-id="{{a.id}}">X</a>
+                  </td>
+                </tr>
+                {%endfor%}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="row mb-5">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <button class="btn btn-primary btn-sm btn-block">
+                Update Cart
+              </button>
+            </div>
+            <div class="col-md-6">
+              <button class="btn btn-outline-primary btn-sm btn-block">
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <label class="text-black h4" for="coupon">Coupon</label>
+              <p>Enter your coupon code if you have one.</p>
+            </div>
+            <div class="col-md-8 mb-3 mb-md-0">
+              <input type="text" class="form-control py-3" id="coupon" placeholder="Coupon Code" />
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-primary btn-sm">Apply Coupon</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 pl-5">
+          <div class="row justify-content-end">
+            <div class="col-md-7">
+              <div class="row">
+                <div class="col-md-12 text-right border-bottom mb-5">
+                  <h3 class="text-black h4 text-uppercase">Cart Totals</h3>
+                </div>
+              </div>
+              <div class="row mb-3"></div>
+              <div class="row mb-5">
+                <div class="col-md-6">
+                  <span class="text-black">Total {{total}} </span>
+                </div>
+                <div class="col-md-6 text-right">
+                  <strong class="text-black"></strong>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <a class="btn btn-default check_out" href="/checkout">Check Out</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% block javascript %}
+    <script>
+      $("#pay").on("click", function () {
+        event.preventDefault();
+        var stripe = Stripe("pk_test_51L2TV5SBnyV9WLBjpNLBtZFUKflkVw2nQtCgcql9VctRgLF914chbWCrxJnUvx0kSvlfTCh6GKQa9qF1t3PFED0V007917JBMz");
+        $.ajax({
+          type: "GET",
+          url: '{% url "checkoutSession" %}',
+          success: function (session) {
+            if (session.id) {
+              stripe
+                .redirectToCheckout({ sessionId: session.id })
+                .then(function (result) {
+                  console.log(result, "failed data==>>>>");
+                });
+            }
+          },
+        });
+      });
+
+      function updateQuantity(cart_id, quantity) {
+        data = {
+          cart_id: cart_id,
+          quantity: quantity,
+          csrfmiddlewaretoken: '{{ csrf_token }}',
+        }
+        $.ajax({
+          type: 'POST',
+          url: '{% url "updateQuantity" %}',
+          data: data,
+          success: function (data) {
+            location.reload()
+          }
+        })
+      }
+
+      $('.cart_quantity_up').on('click', function () {
+        event.preventDefault();
+        quantity = $(this).attr('quantity')
+        cart_id = $(this).attr('data-id')
+        updateQuantity(cart_id, parseInt(quantity) + 1)
+
+
+      })
+      $('.cart_quantity_down').on('click', function () {
+        event.preventDefault();
+        quantity = $(this).attr('quantity')
+        cart_id = $(this).attr('data-id')
+        if (parseInt(quantity) > 1) {
+          updateQuantity(cart_id, parseInt(quantity) - 1)
+
+        }
+      })
+      $(".delete").on("click", function () {
+        event.preventDefault();
+        remove_cart = $(this).attr("data-id");
+        console.log(remove_cart);
+        data = {
+          remove_cart: remove_cart,
+        };
+        $.ajax({
+          type: "GET",
+          url: '{% url "deletecart" %}',
+          data: data,
+          success: function (data) {
+            alert(data.message);
+            location.reload();
+          },
+        });
+      });
+    </script>
+    {%endblock%} {%endblock%}
+  </div>
+</div>

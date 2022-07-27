@@ -1,0 +1,41 @@
+{% extends "base.html" %} 
+{% block content %} 
+{% load static %}
+<div class="site-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <span class="icon-check_circle display-3 text-success"></span>
+        <h2 class="display-3 text-black">Thank you!</h2>
+        <p class="lead mb-5">You order was successfuly completed.</p>
+        <p><a href="/" class="btn btn-sm btn-primary">Back to shop</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Id</th>
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Transaction Id</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in list%}
+    <tr>
+      <th scope="row">{{a.id}}</th>
+      <td>{{a.first_name}}</td>
+      <td>{{a.last_name}}</td>
+      <td>{{a.email}}</td>
+      <td>{{orders.product.name}}</td>
+      <td>{{orders.stripe_payment_intent}}</td>
+    </tr>
+
+    {%endfor%}
+  </tbody>
+</table>
+{% endblock %}

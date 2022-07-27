@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+{% load filters %}
+
+<section id="cart_items">
+    <div class="container">
+        <div class="breadcrumbs">
+            <ol class="breadcrumb">
+                <li><a href="/">Home</a></li>
+                <li class="active">Check out</li>
+            </ol>
+        </div>
+        <!--/breadcrums-->
+
+
+        <div class="shopper-informations">
+            <div class="row">
+                <div class="col-sm-20">
+                    <h1>Select Address</h1>
+                    {%for a in showAddress%}
+                    <address class="vcard">
+                        <input addressId={{a.id}} type="radio" value={{a}} id="radio" name="radio">
+                        <span>{{a.first_name}}</span>
+                        <span>{{a.last_name}}</span><br>
+                        <span>{{a.address}}</span><br>
+                        <span>{{a.city}}</span>
+                        <span>{{a.pincode}}</span><br>
+                        <span>{{a.mobile_no}}</span>
+                    
+                        </span>
+                    </address>
+                    {%endfor%}
+                    <a href="/add_address" button class="btn btn-info" type="button">Add Address</a>
+                </div>
+                <div class="review-payment">
+
+                </div>
+
+                <div class="table-responsive cart_info">
+
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr class="cart_menu">
+                                <td class="image">Item</td>
+                                <td class="description">Name</td>
+                                <td class="price">Price</td>
+                                <td class="quantity">Quantity</td>
+                                <td class="total">Total</td>
+                                <td></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for obj in checkList%}
+                            <tr>
+                                <td class="cart_product">
+                                    <a href=""><img src="media/{{ obj.product.image }}" alt=""></a>
+                                </td>
+                                <td class="cart_description">
+                                    <h4><a href="">{{obj.product.name}}</a></h4>
+
+                                </td>
+                                <td class="cart_price">
+                                    <p>{{obj.price}}</p>
+                                </td>
+                                <td class="cart_quantity">
+                                    <p>{{obj.quantity}}</p>
+                                </td>
+                                <td class="cart_total">
+                                    <p class="cart_total_price">{% multiply obj.quantity obj.price %}</p>
+                                </td>
+
+                            </tr>
+                            {%endfor%}
+
+
+                            <tr>
+                                <td colspan="4">&nbsp;</td>
+                                <td colspan="2">
+                                    <table class="table table-condensed total-result">
+
+                                        <tr>
+                                            <td>Total</td>
+                                            <td><span>{{grandtotal}}</span></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="payment-options">
+                    <a id="pay" class="btn btn-primary" href="">Pay</a>
+                </div>
+            </div>
+</section>
+{% block javascript %}
+<script>
+    $('#pay').on('click', function () {
+        var addressId = $('#radio:checked').attr("addressId");
+        console.log(addressId)
+        event.preventDefault();
+
+        if (addressId) {
+            var stripe = Stripe("pk_test_51L2TV5SBnyV9WLBjpNLBtZFUKflkVw2nQtCgcql9VctRgLF914chbWCrxJnUvx0kSvlfTCh6GKQa9qF1t3PFED0V007917JBMz");
+
+            $.ajax({
+                type: 'GET',
+                url: '{% url "checkoutSession" %}',
+                data: {
+                    addressId: addressId
+                },
+                success: function (session) {
+                    if (session.id) {
+                        stripe.redirectToCheckout({ sessionId: session.id }).then(function (result) {
+                            console.log(result, "failed data==>>>>");
+                        });
+                    }
+                }
+            })
+        }
+        else {
+            alert("Please choose address")
+        }
+    }) 
+</script>
+{%endblock%}
+{%endblock%}

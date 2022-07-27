@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<body>
+    <h2>New User Signup!</h2>
+    <form action="" method="POST">
+        {% csrf_token %}
+    {%for data in form%}
+    {{data.label_tag}} {{data}} {{data.errors|striptags}}<br><br>
+    {%endfor%}
+    <button type="submit" name="submit" value="submit" class="btn btn-default">Signup</button>
+</form>
+</body>
+{%endblock%}
